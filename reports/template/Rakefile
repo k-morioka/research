@@ -1,0 +1,36 @@
+task :default => ['build', 'clean']
+
+task :build do
+  Dir.glob('*.md').map { |md|
+    tex = md.sub('.md', '.tex')
+    `pandoc -f markdown-auto_identifiers -t latex -V fontsize=9pt #{md} -o #{tex}`
+  }
+  puts `platex -kanji=UTF8 report.tex`
+  puts `dvipdfmx -f takao.map report.dvi`
+  puts `rm report.aux report.dvi report.log`
+  Dir.glob('*.md').map { |md|
+    tex = md.sub('.md', '.tex')
+    `rm #{tex}`
+  }
+end
+
+task :open do
+  `xdg-open report.pdf`
+end
+
+task :abstract => ['build_abstract', 'clean']
+task :build_abstract do
+  puts `platex abstract/abstract.tex`
+  puts `dvipdfmx abstract.dvi`
+  puts `mv abstract.pdf build/`
+end
+task :open_abstract do
+  `open build/abstract.pdf`
+end
+
+task :eps do
+  Dir.glob('src/images/**/*.png').each {|png|
+    eps = png.sub('.png', '.eps')
+    p `convert #{png} #{eps}`
+  }
+end

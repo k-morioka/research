@@ -1,0 +1,10 @@
+task :default => ['create']
+
+task :create do
+  unless ENV['REPORT_DATE']
+    puts 'Error: Set REPORT_DATE'
+    return
+  end
+  `cp -rf template #{ENV['REPORT_DATE']}`
+  `sed -i -e 's/REPORT_DATE/#{ENV['REPORT_DATE']}/g' ./#{ENV['REPORT_DATE']}/report.tex`
+end
