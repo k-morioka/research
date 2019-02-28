@@ -1,0 +1,54 @@
+task :default => ['build', 'clean']
+
+name = 'robomech_201906_suenaga'
+
+task :build do
+  Dir.glob('src/*.md').map { |md|
+    tex = md.sub('.md', '.tex')
+    `pandoc -f markdown-auto_identifiers -t latex -V fontsize=9pt #{md} -o #{tex}`
+  }
+  puts "platex -kanji=UTF8 src/#{name}.tex"
+  puts `platex -kanji=UTF8 src/#{name}.tex`
+  puts `dvipdfmx -f takao.map #{name}.dvi`
+  puts `mv #{name}.pdf #{name}.aux #{name}.dvi #{name}.log build/`
+  Dir.glob('src/*.md').map { |md|
+    tex = md.sub('.md', '.tex')
+    if md != 'src/thesis.tex'
+      `mv #{tex} build/`
+    end
+  }
+end
+
+task :clean do
+  Dir.glob('src/*.md').map { |md|
+    tex = md.sub('.md', '.tex')
+    if md != 'src/thesis.tex'
+      `rm #{tex}`
+    end
+  }
+
+  `rm *.log`
+  `rm *.dvi `
+end
+
+task :open do
+  `xdg-open build/#{name}.pdf`
+end
+
+
+task :abstract => ['build_abstract', 'clean']
+task :build_abstract do
+  puts `platex abstract/abstract.tex`
+  puts `dvipdfmx abstract.dvi`
+  puts `mv abstract.pdf build/`
+end
+task :open_abstract do
+  `open build/abstract.pdf`
+end
+
+task :eps do
+  Dir.glob('src/images/**/*.png').each {|png|
+    eps = png.sub('.png', '.eps')
+    p `convert #{png} #{eps}`
+  }
+end
